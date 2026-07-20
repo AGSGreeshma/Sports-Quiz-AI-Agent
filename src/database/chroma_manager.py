@@ -1,9 +1,9 @@
 """
 ChromaDB manager for Sports Quiz AI.
 
-Provides a thin, well-typed wrapper around a persistent ChromaDB
-collection used to store and retrieve sports knowledge for
-Retrieval-Augmented Generation (RAG).
+Provides a clean, typed wrapper around a persistent ChromaDB collection
+used to store and retrieve sports knowledge for Retrieval-Augmented
+Generation (RAG).
 """
 
 from typing import Any, Dict, List, Optional
@@ -14,14 +14,12 @@ from chromadb.api.models.Collection import Collection
 
 from src.config.settings import CHROMA_DB_PATH
 
-# Name of the collection used to store sports knowledge documents.
-COLLECTION_NAME: str = "sports_knowledge"
+COLLECTION_NAME = "sports_knowledge"
 
 
 class ChromaManager:
     """
-    Manages a persistent ChromaDB collection for storing and retrieving
-    sports knowledge documents used in the quiz generation pipeline.
+    Manages a persistent ChromaDB collection used by the Sports Quiz AI.
     """
 
     def __init__(self, db_path: str = CHROMA_DB_PATH) -> None:
@@ -30,7 +28,6 @@ class ChromaManager:
 
         Args:
             db_path: Filesystem path where ChromaDB persists its data.
-                     Defaults to the path configured in settings.py.
         """
         self._db_path = db_path
         self._client: Optional[chromadb.PersistentClient] = None
@@ -38,11 +35,11 @@ class ChromaManager:
 
     def initialize(self) -> None:
         """
-        Initialize the persistent ChromaDB client and create or load the
-        "sports_knowledge" collection.
-
-        Must be called before any other read/write operations.
+        Create the ChromaDB client and load (or create) the collection.
         """
+        if self._client is not None:
+            return
+
         self._client = chromadb.PersistentClient(path=self._db_path)
         self._collection = self._client.get_or_create_collection(
             name=COLLECTION_NAME
@@ -54,13 +51,38 @@ class ChromaManager:
         Return the active ChromaDB collection.
 
         Raises:
-            RuntimeError: If the manager has not been initialized yet.
+            RuntimeError:
+                If initialize() has not been called.
         """
         if self._collection is None:
             raise RuntimeError(
-                "ChromaManager is not initialized. Call initialize() first."
+                "ChromaManager is not initialized. "
+                "Call initialize() before using the collection."
             )
+
         return self._collection
+
+    def reset_collection(self) -> None:
+        """
+        Delete and recreate the collection.
+
+        Useful when rebuilding the vector database from scratch so old
+        chunks are removed before inserting updated ones.
+        """
+        if self._client is None:
+            raise RuntimeError(
+                "Initialize ChromaManager before resetting the collection."
+            )
+
+        try:
+            self._client.delete_collection(COLLECTION_NAME)
+        except Exception:
+            # Ignore if the collection doesn't exist yet.
+            pass
+
+        self._collection = self._client.get_or_create_collection(
+            name=COLLECTION_NAME
+        )
 
     def add_documents(
         self,
@@ -69,30 +91,37 @@ class ChromaManager:
         ids: Optional[List[str]] = None,
     ) -> List[str]:
         """
-        Add documents to the sports knowledge collection.
+        Store documents inside ChromaDB.
 
         Args:
-            documents: List of text documents to store.
-            metadatas: Optional list of metadata dicts, one per document.
-                       Must be the same length as `documents` if provided.
-            ids: Optional list of unique document IDs. If not provided,
-                 UUIDs are generated automatically.
+            documents:
+                Documents to embed and store.
+
+            metadatas:
+                Optional metadata dictionaries.
+
+            ids:
+                Optional unique IDs.
 
         Returns:
-            The list of IDs assigned to the added documents.
+            IDs assigned to the stored documents.
 
         Raises:
-            ValueError: If `documents` is empty, or if `metadatas`/`ids`
-                        are provided with a length mismatch.
+            ValueError:
+                If inputs are invalid.
         """
         if not documents:
             raise ValueError("documents must not be empty.")
 
         if metadatas is not None and len(metadatas) != len(documents):
-            raise ValueError("metadatas must be the same length as documents.")
+            raise ValueError(
+                "metadatas must have the same length as documents."
+            )
 
         if ids is not None and len(ids) != len(documents):
-            raise ValueError("ids must be the same length as documents.")
+            raise ValueError(
+                "ids must have the same length as documents."
+            )
 
         document_ids = ids or [str(uuid4()) for _ in documents]
 
@@ -101,6 +130,7 @@ class ChromaManager:
             metadatas=metadatas,
             ids=document_ids,
         )
+
         return document_ids
 
     def retrieve_documents(
@@ -110,17 +140,20 @@ class ChromaManager:
         where: Optional[Dict[str, Any]] = None,
     ) -> List[str]:
         """
-        Retrieve documents most semantically relevant to a query using
-        vector similarity search.
+        Retrieve documents most relevant to a query.
 
         Args:
-            query_text: The natural language query to search for.
-            n_results: Maximum number of relevant documents to return.
-            where: Optional metadata filter to narrow the search.
+            query_text:
+                Natural language search query.
+
+            n_results:
+                Maximum number of matching documents.
+
+            where:
+                Optional metadata filter.
 
         Returns:
-            A list of the most relevant document texts, ordered by
-            relevance (most relevant first).
+            List of retrieved document strings.
         """
         results = self.collection.query(
             query_texts=[query_text],
@@ -128,10 +161,9 @@ class ChromaManager:
             where=where,
         )
 
-        matched_documents = results.get("documents") or []
-        if not matched_documents:
+        documents = results.get("documents")
+
+        if not documents:
             return []
 
-        # `documents` is a list of lists (one list per query text).
-        # A single query was issued, so the first entry holds the results.
-        return matched_documents[0]
+        return documents[0]

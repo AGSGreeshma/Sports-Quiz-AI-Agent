@@ -72,14 +72,27 @@ Live Web Search Context:
 
 Instructions:
 - Generate exactly {num_questions} multiple-choice questions about {topic} at {difficulty} difficulty.
-- Each question must have exactly four answer options labeled A, B, C, and D.
-- Clearly indicate the correct answer for each question.
-- Provide a short explanation after every answer, describing why it is correct.
 - Use the Knowledge Base Context as the primary source of information.
 - Use the Live Web Search Context only to include recent information when relevant.
 - Do not invent unsupported facts.
 - If there is insufficient context to generate accurate questions, state that clearly instead of making assumptions.
-- Keep formatting clean and consistent, numbering each question in order.
+- Format the output as valid Markdown, using EXACTLY this structure for every question, with no deviations:
+
+## Question 1
+Question text
+A)
+B)
+C)
+D)
+✅ Correct Answer: B
+📖 Explanation:
+One or two concise sentences.
+
+- Repeat this structure for each question, incrementing the "## Question N" heading number in order.
+- Do not use bold ("**") anywhere in the output.
+- Do not wrap headings in bold or any other Markdown emphasis.
+- Do not add any extra commentary, titles, or text outside of this structure.
+- Return clean Markdown only.
 """
 
     @staticmethod

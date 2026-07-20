@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import List
 
 from src.database.chroma_manager import ChromaManager
+from src.utils.text_chunker import chunk_text
 
 # Folder containing the raw sports knowledge text files.
 DATA_DIR: Path = Path("data")
@@ -35,11 +36,36 @@ def load_text_files(data_dir: Path) -> List[Path]:
     return sorted(data_dir.glob("*.txt"))
 
 
+def load_file_chunks(file_path: Path) -> List[str]:
+    """
+    Read a text file and split its contents into overlapping chunks.
+
+    Args:
+        file_path: Path to the `.txt` file to read.
+
+    Returns:
+        A list of text chunks produced from the file's contents. Returns
+        an empty list if the file is empty or contains only whitespace.
+    """
+    content = file_path.read_text(encoding="utf-8").strip()
+
+    if not content:
+        return []
+
+    return chunk_text(content)
+
+
 def load_documents_into_chroma(
     manager: ChromaManager, file_paths: List[Path]
 ) -> None:
     """
-    Read each text file and store its contents as a document in ChromaDB.
+    Read each text file, split it into chunks, and store each chunk as a
+    separate document in ChromaDB.
+
+    Each chunk is assigned a unique ID derived from the source file's
+    stem and its chunk index, e.g. "cricket_0", "cricket_1", "cricket_2".
+    Each chunk is stored with metadata containing the sport (file stem),
+    the source filename, and the chunk index within that file.
 
     Args:
         manager: An initialized ChromaManager instance.
@@ -50,30 +76,40 @@ def load_documents_into_chroma(
         return
 
     for file_path in file_paths:
-        content = file_path.read_text(encoding="utf-8").strip()
+        chunks = load_file_chunks(file_path)
 
-        if not content:
+        if not chunks:
             print(f"Skipped empty file: {file_path.name}")
             continue
 
+        chunk_ids = [f"{file_path.stem}_{index}" for index in range(len(chunks))]
+        metadatas = [
+            {
+                "sport": file_path.stem,
+                "source": file_path.name,
+                "chunk": index,
+            }
+            for index in range(len(chunks))
+        ]
+
         manager.add_documents(
-            documents=[content],
-            metadatas=[{"source": file_path.name}],
-            ids=[file_path.stem],
+            documents=chunks,
+            metadatas=metadatas,
+            ids=chunk_ids,
         )
-        print(f"Loaded document: {file_path.name}")
+        print(f"Loaded {len(chunks)} chunk(s) from: {file_path.name}")
 
 
 def main() -> None:
-    """Load all sports knowledge text files from data/ into ChromaDB."""
+    print(">>> main() started")
+
     manager = ChromaManager()
     manager.initialize()
+    manager.reset_collection()
 
     file_paths = load_text_files(DATA_DIR)
     load_documents_into_chroma(manager, file_paths)
 
-    print(f"Finished loading {len(file_paths)} document(s) into ChromaDB.")
-
-
+    print(f"Finished loading {len(file_paths)} file(s) into ChromaDB.")
 if __name__ == "__main__":
     main()
