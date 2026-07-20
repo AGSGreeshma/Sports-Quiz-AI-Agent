@@ -12,6 +12,14 @@ An AI-powered Sports Quiz Generator built using **Streamlit**, **Google Gemini**
 
 ---
 
+## 🎯 About the Project
+
+Sports Quiz AI is an AI-powered quiz generation application that combines **Retrieval-Augmented Generation (RAG)**, **vector search**, **live web search**, and **Google Gemini** to create accurate and engaging sports quizzes. Users can customize quizzes by selecting a sport, difficulty level, and number of questions, while the application generates multiple-choice questions with explanations in real time.
+
+This project demonstrates the integration of modern AI technologies into an interactive educational application with a clean and responsive user interface.
+
+---
+
 ## 🚀 Features
 
 - 🧠 AI-generated sports quizzes using Google Gemini
@@ -47,21 +55,14 @@ An AI-powered Sports Quiz Generator built using **Streamlit**, **Google Gemini**
 
 ## 🛠️ Tech Stack
 
-### Frontend
-- Streamlit
-
-### AI
-- Google Gemini
-
-### Retrieval
-- ChromaDB
-- Sentence Transformers
-
-### Search
-- DuckDuckGo Search
-
-### Programming Language
-- Python
+| Category | Technologies |
+|----------|--------------|
+| **Frontend** | Streamlit |
+| **Programming Language** | Python |
+| **AI Model** | Google Gemini |
+| **Retrieval** | ChromaDB, Sentence Transformers |
+| **Web Search** | DuckDuckGo Search |
+| **Version Control** | Git, GitHub |
 
 ---
 
@@ -94,8 +95,8 @@ Sports-Quiz-AI/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/Sports-Quiz-AI.git
-cd Sports-Quiz-AI
+git clone https://github.com/AGSGreeshma/Sports-Quiz-AI-Agent.git
+cd Sports-Quiz-AI-Agent
 ```
 
 ### 2. Create a virtual environment
@@ -161,12 +162,51 @@ streamlit run app.py
 
 ## 📸 Screenshots
 
-Add screenshots of:
+### 🏠 Home Page
 
-- Home Page
-- Sidebar
-- Generated Quiz
-- Download Feature
+The landing page where users can select a sport, difficulty level, and the number of quiz questions.
+
+![Home Page](images/home.png)
+
+---
+
+### 🎛️ Sidebar
+
+A clean and responsive sidebar for configuring quiz preferences and navigating the application.
+
+![Sidebar](images/sidebar.png)
+
+---
+
+### ❓ Generated Quiz
+
+AI-generated multiple-choice sports quiz with answer options and explanations.
+
+![Generated Quiz](images/quiz.png)
+
+---
+
+### 📊 Quiz Results
+
+Interactive results page displaying the user's score, correct answers, and explanations.
+
+![Quiz Results](images/result.png)
+
+---
+
+### 🌙 Dark Mode
+
+The application supports both Light and Dark themes for a better user experience.
+
+![Dark Mode](images/darkmode.png)
+
+---
+
+### 🦶 Footer
+
+A responsive footer with project information and useful links.
+
+![Footer](images/footer.png)
 
 ---
 
@@ -188,5 +228,11 @@ Add screenshots of:
 **Gayathri Sai Greeshma Anantha**
 
 Computer Science Engineering (AI & ML)
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**. 
 
 ---
