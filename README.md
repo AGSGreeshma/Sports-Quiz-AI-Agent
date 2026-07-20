@@ -4,6 +4,14 @@ An AI-powered Sports Quiz Generator built using **Streamlit**, **Google Gemini**
 
 ---
 
+## 🌐 Live Demo
+
+**App:** https://sports-quiz-ai-agent-njt6khpwr5nahkcyddgplf.streamlit.app/
+
+**GitHub Repository:** https://github.com/AGSGreeshma/Sports-Quiz-AI-Agent
+
+---
+
 ## 🚀 Features
 
 - 🧠 AI-generated sports quizzes using Google Gemini
